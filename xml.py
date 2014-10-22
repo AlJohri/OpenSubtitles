@@ -3,17 +3,20 @@
 import fileinput
 from os import listdir
 import sys
+import glob
+
+year = './OpenSubtitles2013/xml/en/2013'
 
 for movieDir in glob.glob('./OpenSubtitles2013/xml/en/2013' + '/*' * 1):
-	movieFiles = listdir(year+"/"+movieDir)
+	movieFiles = listdir(movieDir)
 	script = filter(lambda x: x.endswith('.xml'), movieFiles)[0]
 
 	text = ""
-	f=open(year+"/"+movieDir+'/'+script)
+	f=open(movieDir+'/'+script)
 	for line in f.readlines():
 	    text += line
 
-	print year+"/"+movieDir+'/'+script
+	print movieDir+'/'+script
 
 	from lxml import etree
 	root = etree.fromstring(text)
@@ -27,5 +30,5 @@ for movieDir in glob.glob('./OpenSubtitles2013/xml/en/2013' + '/*' * 1):
 		if (char >= 'A' and char <='z') or (char >= '0' and char <='9'):
 			result += ' '
 	#print result
-	with open(year+"/"+movieDir+'/subtitle.txt', 'w') as g:
+	with open(movieDir+'/subtitle.txt', 'w') as g:
 		g.write(result.encode('utf-8', 'ignore'))

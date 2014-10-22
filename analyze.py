@@ -20,7 +20,8 @@ from sklearn import metrics
 
 import numpy as np
 from scipy.stats import mode
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, mpld3
+from mpld3 import plugins
 
 print ("loading data... ")
 
@@ -35,7 +36,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 # http://scikit-learn.org/stable/auto_examples/document_clustering.html
 
 N_CLUSTERS = 27
-PLOT = False
+PLOT = True
 
 naive_bayes = MultinomialNB(alpha=0.1,fit_prior=True)
 k_means = KMeans(n_clusters=N_CLUSTERS, init='k-means++', max_iter=100, n_init=1, verbose=True)
@@ -48,11 +49,11 @@ X = vectorizer.fit_transform(text)
 print(X.shape)
 
 if PLOT==True:
-	# reduce dimensionality
-	svd = TruncatedSVD(2)
-	# lsa = make_pipeline(svd, Normalizer(copy=False))
-	lsa = svd
-	X = lsa.fit_transform(X)
+    # reduce dimensionality
+    svd = TruncatedSVD(2)
+    # lsa = make_pipeline(svd, Normalizer(copy=False))
+    lsa = svd
+    X = lsa.fit_transform(X)
 
 # cluster
 km = k_means.fit(X)
@@ -62,44 +63,56 @@ k_means_cluster_centers = k_means.cluster_centers_
 k_means_labels_unique = np.unique(k_means_labels)
 
 if PLOT==True:
-	fig = plt.figure(figsize=(8, 3))
-	fig.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9)
+    # fig = plt.figure(figsize=(8, 3))
+    # fig.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9)
 
-	ax = fig.add_subplot(1, 3, 1)
-	colors = [(random.random(), random.random(), random.random()) for x in range(N_CLUSTERS)]
-	for k, col in zip(range(N_CLUSTERS), colors):
-	    my_members = k_means_labels == k
-	    cluster_center = k_means_cluster_centers[k]
-	    ax.plot(X[my_members, 0], X[my_members, 1], 'w', markerfacecolor=col, marker='.')
-	    ax.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col, markeredgecolor='k', markersize=6)
+    fig, ax = plt.subplots()
+    ax.grid(True, alpha=0.3)
 
-	ax.set_title('KMeans')
-	ax.set_xticks(())
-	ax.set_yticks(())
+    colors = [(random.random(), random.random(), random.random()) for x in range(N_CLUSTERS)]
+    for k, col in zip(range(N_CLUSTERS), colors):
+        my_members = k_means_labels == k
+        cluster_center = k_means_cluster_centers[k]
+        points = ax.plot(X[my_members, 0], X[my_members, 1], 'w', markerfacecolor=col, marker='.')
+        centers = ax.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col, markeredgecolor='k', markersize=6)
+        
+        labels = []
+        for movie in movies[k_means_labels == k]:
+            labels.append(movie.get('Title') + " " + movie.get('imdbID') + " " + ", ".join(movie.get('Genre')) )
 
-	plt.show()
+        tooltip = plugins.PointHTMLTooltip(points[0], labels, voffset=10, hoffset=10)
+        plugins.connect(fig, tooltip)
+
+    # import pdb; pdb.set_trace()
+
+    ax.set_title('KMeans')
+    ax.set_xticks(())
+    ax.set_yticks(())
+
+    # plt.show()
+    mpld3.show()
 
 if PLOT==False:
 
-	print("Top terms per cluster:")
-	print()
-	order_centroids = k_means_cluster_centers.argsort()[:, ::-1]
-	terms = vectorizer.get_feature_names()
-	for i in range(N_CLUSTERS):
-	    print("Cluster %d:" % i, end='')
-	    for ind in order_centroids[i, :100]:
-	        print(' %s' % terms[ind], end='')
-	    print()
-	    print()
+    print("Top terms per cluster:")
+    print()
+    order_centroids = k_means_cluster_centers.argsort()[:, ::-1]
+    terms = vectorizer.get_feature_names()
+    for i in range(N_CLUSTERS):
+        print("Cluster %d:" % i, end='')
+        for ind in order_centroids[i, :100]:
+            print(' %s' % terms[ind], end='')
+        print()
+        print()
 
-	# changed genres into array so cannot just use "mode" method any longer
+    # changed genres into array so cannot just use "mode" method any longer
 
-	# print("Top genres per cluster:")
-	# print()
-	# for k in range(N_CLUSTERS):
-	# 	print("Cluster %d:" % i, end='')
-	# 	genres = [movie.get('Genre') for movie in movies[k_means_labels == k] ]
-	# 	print (mode(genres))
-	# 	print ("out of")
-	# 	print (len(genres))
+    # print("Top genres per cluster:")
+    # print()
+    # for k in range(N_CLUSTERS):
+    #   print("Cluster %d:" % i, end='')
+    #   genres = [movie.get('Genre') for movie in movies[k_means_labels == k] ]
+    #   print (mode(genres))
+    #   print ("out of")
+    #   print (len(genres))
 
