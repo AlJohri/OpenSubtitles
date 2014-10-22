@@ -1,3 +1,4 @@
+*.pyc
 .DS_Store
 OpenSubtitles2012
 OpenSubtitles2013
