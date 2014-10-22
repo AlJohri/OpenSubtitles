@@ -6,7 +6,7 @@ import glob
 # year = sys.argv[1] if len(sys.argv) > 1 else None
 # if not year: raise "shit"
 
-year = './OpenSubtitles2013/xml/en/1985'
+year = './OpenSubtitles2013/xml/en/2013'
 
 # movies = {}
 movies = []

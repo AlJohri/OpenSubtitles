@@ -35,7 +35,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 # http://scikit-learn.org/0.14/auto_examples/document_clustering.html#example-document-clustering-py
 # http://scikit-learn.org/stable/auto_examples/document_clustering.html
 
-N_CLUSTERS = 27
+N_CLUSTERS = 5
 PLOT = True
 
 naive_bayes = MultinomialNB(alpha=0.1,fit_prior=True)
@@ -66,7 +66,7 @@ if PLOT==True:
     # fig = plt.figure(figsize=(8, 3))
     # fig.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10,10))
     ax.grid(True, alpha=0.3)
 
     colors = [(random.random(), random.random(), random.random()) for x in range(N_CLUSTERS)]
@@ -78,7 +78,7 @@ if PLOT==True:
         
         labels = []
         for movie in movies[k_means_labels == k]:
-            labels.append(movie.get('Title') + " " + movie.get('imdbID') + " " + ", ".join(movie.get('Genre')) )
+            labels.append(movie.get('Title', '') + " " + movie.get('imdbID', '') + " " + ", ".join(movie.get('Genre', '')) )
 
         tooltip = plugins.PointHTMLTooltip(points[0], labels, voffset=10, hoffset=10)
         plugins.connect(fig, tooltip)
@@ -90,7 +90,11 @@ if PLOT==True:
     ax.set_yticks(())
 
     # plt.show()
+    with open("output.html", 'w') as f:
+        mpld3.save_html(fig, f)
+    
     mpld3.show()
+
 
 if PLOT==False:
 
