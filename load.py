@@ -6,9 +6,7 @@ import glob
 # year = sys.argv[1] if len(sys.argv) > 1 else None
 # if not year: raise "shit"
 
-
-years= [1985, 1986, 1987, 1988, 2012, 2013]
-# years= [2013]
+years = range(0, 1985)
 movies = []
 
 for year in years:

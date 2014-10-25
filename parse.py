@@ -17,7 +17,7 @@ with open("opensubtitles_imdb.tsv", 'rU') as f:
 # iterate through 2013 subtitles
 
 # for movieDir in glob.glob('./OpenSubtitles2013/xml/en' + '/*' * 2):
-for movieDir in glob.glob('./OpenSubtitles2013/xml/en/1988' + '/*' * 1):
+for movieDir in glob.glob('./OpenSubtitles2013/xml/en/1984' + '/*' * 1):
 	os_id = movieDir.split("/")[-1]
 	imdb_id = imdb_movies.get(os_id, {}).get('IDMovieImdb', {})
 	print movieDir, "|", "OpenSubtitles ID: ", os_id, "|", "IMDB ID: ", imdb_id
