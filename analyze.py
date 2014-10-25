@@ -17,6 +17,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import Normalizer
 from sklearn.cross_validation import cross_val_score
 from sklearn import metrics
+from sklearn.metrics import pairwise_distances
 
 import numpy as np
 from scipy.stats import mode
@@ -35,7 +36,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 # http://scikit-learn.org/0.14/auto_examples/document_clustering.html#example-document-clustering-py
 # http://scikit-learn.org/stable/auto_examples/document_clustering.html
 
-N_CLUSTERS = 5
+# I think 3 or 4 works best
+
+N_CLUSTERS = 3
 PLOT = True
 
 naive_bayes = MultinomialNB(alpha=0.1,fit_prior=True)
@@ -62,39 +65,6 @@ k_means_labels = k_means.labels_
 k_means_cluster_centers = k_means.cluster_centers_
 k_means_labels_unique = np.unique(k_means_labels)
 
-if PLOT==True:
-    # fig = plt.figure(figsize=(8, 3))
-    # fig.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9)
-
-    fig, ax = plt.subplots(figsize=(10,10))
-    ax.grid(True, alpha=0.3)
-
-    colors = [(random.random(), random.random(), random.random()) for x in range(N_CLUSTERS)]
-    for k, col in zip(range(N_CLUSTERS), colors):
-        my_members = k_means_labels == k
-        cluster_center = k_means_cluster_centers[k]
-        points = ax.plot(X[my_members, 0], X[my_members, 1], 'w', markerfacecolor=col, marker='.')
-        centers = ax.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col, markeredgecolor='k', markersize=6)
-        
-        labels = []
-        for movie in movies[k_means_labels == k]:
-            labels.append(movie.get('Title', '') + " " + movie.get('imdbID', '') + " " + ", ".join(movie.get('Genre', '')) )
-
-        tooltip = plugins.PointHTMLTooltip(points[0], labels, voffset=10, hoffset=10)
-        plugins.connect(fig, tooltip)
-
-    # import pdb; pdb.set_trace()
-
-    ax.set_title('KMeans')
-    ax.set_xticks(())
-    ax.set_yticks(())
-
-    # plt.show()
-    with open("output.html", 'w') as f:
-        mpld3.save_html(fig, f)
-    
-    mpld3.show()
-
 
 if PLOT==False:
 
@@ -120,3 +90,66 @@ if PLOT==False:
     #   print ("out of")
     #   print (len(genres))
 
+# http://scikit-learn.org/stable/modules/clustering.html#silhouette-coefficient
+
+print (metrics.silhouette_score(X, k_means_labels, metric='euclidean'))
+
+if PLOT==True:
+    fig = plt.figure(figsize=(30,10))
+    # fig.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9)
+
+    # fig, ax = plt.subplots(figsize=(10,10))
+
+    ax = fig.add_subplot(1,N_CLUSTERS+1,1)
+    ax.grid(True, alpha=0.3)
+
+    colors = [(random.random(), random.random(), random.random()) for x in range(N_CLUSTERS)]
+    for k, col in zip(range(N_CLUSTERS), colors):
+        my_members = k_means_labels == k
+        cluster_center = k_means_cluster_centers[k]
+        points = ax.plot(X[my_members, 0], X[my_members, 1], 'w', markerfacecolor=col, marker='.', label='Cluster %i' % k)
+        centers = ax.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col, markeredgecolor='k', markersize=6)
+        
+        labels = []
+        for movie in movies[k_means_labels == k]:
+            labels.append(movie.get('Title', '') + " " + movie.get('imdbID', '') + " " + ", ".join(movie.get('Genre', '')) + " " + movie.get('', '') + " ")
+
+        tooltip = plugins.PointHTMLTooltip(points[0], labels, voffset=10, hoffset=10)
+        plugins.connect(fig, tooltip)
+
+    ax.set_title('KMeans')
+    ax.set_xticks(())
+    ax.set_yticks(())
+    ax.legend()
+
+    blah = []
+
+    for k in range(N_CLUSTERS):
+
+        innerDict = {}
+
+        for movie in movies[k_means_labels == k]:
+            genres = movie.get('Genre', '')
+            for genre in genres:
+                if genre in innerDict:
+                    innerDict[genre] = innerDict[genre]+1
+                else:
+                    innerDict[genre] = 0
+
+        ind = np.arange(len(innerDict.keys()))
+        width = 0.35
+
+        ax = fig.add_subplot(1,N_CLUSTERS+1,k+2)
+        rects1 = ax.bar(ind, innerDict.values(), width, color='r')
+        ax.set_xticklabels(innerDict.keys())
+        print (innerDict.keys())
+
+        blah.append(innerDict)
+
+    print (blah)
+
+    # plt.show()
+    with open("output.html", 'w') as f:
+        mpld3.save_html(fig, f)
+    
+    mpld3.show()
