@@ -28,6 +28,7 @@ for year in years:
 			innerDict[key] = value
 		if innerDict.get('Genre'):
 			innerDict['Genre']= innerDict['Genre'].split(', ')
+		innerDict['osID'] = movieDir.split("/")[-1]
 		if not innerDict.get('Type')=='movie': continue
 		f = open(movieDir+'/'+script[0])
 		text= ""
